@@ -1,20 +1,26 @@
-package com.db.my_spring;
+package com.db.mySpring;
+
 
 import javax.annotation.PostConstruct;
 
 /**
  * Created by Evegeny on 28/08/2017.
  */
+@Benchmark
 public class IRobot {
-    @InjectByFieldType
     private Speaker speaker;
 
-    @InjectByFieldType
+    @PostConstruct
+    public void init() {
+        System.out.println(speaker.getClass());
+    }
+
+    @InjectByType
     private Cleaner cleaner;
 
-    @PostConstruct
-    public void init(){
-        System.out.println("PostConstructor works!");
+    @InjectByType
+    public void setSpeaker(Speaker speaker) {
+        this.speaker = speaker;
     }
 
     public void cleanRoom() {

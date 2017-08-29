@@ -1,4 +1,4 @@
-package com.db.my_spring;
+package com.db.mySpring;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +14,8 @@ public class JavaConfig implements Config {
     public JavaConfig() {
         ifc2Class.put(Speaker.class, ConsoleSpeaker.class);
         ifc2Class.put(Cleaner.class, PowerCleaner.class);
-        ifc2Class.put(IRobot.class, IRobot.class);
+
+
     }
 
     @Override

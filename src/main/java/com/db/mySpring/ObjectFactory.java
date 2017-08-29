@@ -1,8 +1,12 @@
-package com.db.my_spring;
+package com.db.mySpring;
 
 import lombok.SneakyThrows;
+import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 
+import javax.annotation.PostConstruct;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +19,7 @@ public class ObjectFactory {
     private Config config = new JavaConfig();
     private Reflections scanner = new Reflections("com.db");
     private List<ObjectConfigurator> objectConfigurators = new ArrayList<>();
+    private List<ProxyConfigurator> proxyConfigurators = new ArrayList<>();
 
     public static ObjectFactory getInstance() {
         return ourInstance;
@@ -26,15 +31,32 @@ public class ObjectFactory {
         for (Class<? extends ObjectConfigurator> aClass : classes) {
             objectConfigurators.add(aClass.newInstance());
         }
+
+        Set<Class<? extends ProxyConfigurator>> classesProxy = scanner.getSubTypesOf(ProxyConfigurator.class);
+        for (Class<? extends ProxyConfigurator> aClass : classesProxy) {
+            proxyConfigurators.add(aClass.newInstance());
+        }
     }
+
+
+
 
     @SneakyThrows
     public <T> T createObject(Class<T> type) {
         type = resolveImpl(type);
-        T t = type.newInstance();
-
+        final T t = type.newInstance();
         configure(t);
+        invokeInitMethod(type, t);
 
+        return configureProxyIfNeeded(t);
+    }
+
+
+
+    private <T> T configureProxyIfNeeded(T t) {
+        for (ProxyConfigurator proxyConfigurator : proxyConfigurators) {
+            t = proxyConfigurator.wrapWithProxy(t);
+        }
         return t;
     }
 
@@ -44,10 +66,17 @@ public class ObjectFactory {
         }
     }
 
+    private <T> void invokeInitMethod(Class<T> type, T t) throws IllegalAccessException, InvocationTargetException {
+        Set<Method> methods = ReflectionUtils.getAllMethods(type, method -> method.isAnnotationPresent(PostConstruct.class));
+        for (Method method : methods) {
+            method.setAccessible(true);
+            method.invoke(t);
+        }
+    }
+
     private <T> Class<T> resolveImpl(Class<T> type) {
         if (type.isInterface()) {
             Class<T> implClass = config.getImplClass(type);
-
             if (implClass == null) {
                 Set<Class<? extends T>> classes = scanner.getSubTypesOf(type);
                 if (classes.size() != 1) {

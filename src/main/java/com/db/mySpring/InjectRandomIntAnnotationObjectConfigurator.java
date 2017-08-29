@@ -1,4 +1,4 @@
-package com.db.my_spring;
+package com.db.mySpring;
 
 import lombok.SneakyThrows;
 import org.reflections.ReflectionUtils;

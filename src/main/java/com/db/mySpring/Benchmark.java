@@ -1,4 +1,4 @@
-package com.db.my_spring;/**
+package com.db.mySpring;/**
  * Created by Evegeny on 28/08/2017.
  */
 
@@ -8,9 +8,7 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RUNTIME)
-@Target(ElementType.FIELD)
-public @interface InjectRandomInt {
-    int min();
-    int max();
+public @interface Benchmark {
 }
